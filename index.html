@@ -1,0 +1,255 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101426">
+<title>Minha Platina 🎮</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0c1020;color:#f4f5ff;font:16px Arial,sans-serif;padding:18px}
+main{max-width:800px;margin:auto}
+h1{color:#c4b5fd;margin-bottom:5px}
+p{color:#b6bfd6}
+.card{background:#171e33;padding:16px;border-radius:16px;margin:14px 0;border:1px solid #303954}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:#242d47;padding:12px;border-radius:12px;text-align:center}
+.stat strong{display:block;font-size:25px;color:#c4b5fd}
+input,select,button{padding:12px;border-radius:9px;border:1px solid #414c68;background:#0f172a;color:white;font-size:15px;max-width:100%}
+input,select{width:100%;margin:4px 0}
+button{background:#7654db;border:0;font-weight:bold;cursor:pointer;margin:4px 2px}
+.row{display:grid;grid-template-columns:2fr 1fr;gap:8px}
+.game{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #303954}
+.game input{width:22px;height:22px;flex-shrink:0}
+.info{flex:1;overflow-wrap:anywhere}
+.name{font-weight:bold}
+.meta{font-size:13px;color:#aab6d0;margin-top:5px}
+.done .name{text-decoration:line-through;color:#9ce8b3}
+.tag{font-size:11px;color:#9ce8b3}
+.actions{white-space:nowrap}
+.actions button{font-size:12px;padding:8px}
+progress{width:100%;height:12px;accent-color:#8b5cf6}
+.small{font-size:12px}
+@media(max-width:500px){body{padding:10px}.stats{gap:5px}.stat{padding:9px 3px}.stat strong{font-size:21px}.row{grid-template-columns:1fr}.actions button{padding:7px 5px}}
+</style>
+</head>
+<body>
+<main>
+<h1>🎮 Minha Platina</h1>
+<p>Minha coleção pessoal de jogos zerados.</p>
+
+<div class="stats">
+<div class="stat"><strong id="total">60</strong><span>Jogos</span></div>
+<div class="stat"><strong id="finished">60</strong><span>Zerados</span></div>
+<div class="stat"><strong id="percent">100%</strong><span>Conclusão</span></div>
+</div>
+
+<div class="card">
+<h2>➕ Adicionar jogo</h2>
+<form id="add">
+<input id="name" placeholder="Nome do jogo" required maxlength="100">
+<div class="row">
+<select id="platform">
+<option>NES</option><option>SNES</option><option>MG</option>
+<option>GB</option><option>GBA</option><option>PS1</option>
+<option>PS2</option><option>Xbox</option><option>Xbox 360</option>
+<option>PSP</option><option>NDS</option><option>3DS</option>
+<option>PS4</option><option>Outro</option>
+</select>
+<select id="status">
+<option value="yes">Já zerei</option>
+<option value="no">Quero jogar</option>
+</select>
+</div>
+<button type="submit">Adicionar à coleção</button>
+</form>
+</div>
+
+<div class="card">
+<h2>📚 Minha coleção</h2>
+<input id="search" placeholder="🔎 Buscar jogo ou console...">
+<div class="row">
+<select id="filter">
+<option value="all">Todos os jogos</option>
+<option value="yes">Somente zerados</option>
+<option value="no">Quero jogar</option>
+</select>
+<select id="console">
+<option value="all">Todos os consoles</option>
+</select>
+</div>
+<div style="margin:12px 0"><progress id="progress" value="60" max="60"></progress></div>
+<div id="list"></div>
+<p class="small">Os dados ficam salvos neste navegador. Use o backup para guardar uma cópia.</p>
+<button type="button" onclick="backup()">⬇ Exportar backup</button>
+<button type="button" onclick="document.getElementById('file').click()">⬆ Importar backup</button>
+<input id="file" type="file" accept=".json,application/json" style="display:none">
+</div>
+<p class="small">Minha Platina • Seu progresso, sua história gamer.</p>
+</main>
+
+<script>
+const initial=[
+["Jet Li: Rise of the Honor","PS2"],
+["Dante’s Inferno","Xbox 360"],
+["Silent Hill","PS1"],
+["Silent Hill 2","PS2"],
+["Silent Hill 3","PS2"],
+["Silent Hill 4: The Room","PS2"],
+["Silent Hill: Origins","PSP"],
+["Silent Hill: Homecoming","Xbox 360"],
+["Silent Hill: Shattered Memories","PSP"],
+["Silent Hill: Downpour","Xbox 360"],
+["Congo’s Caper","SNES"],
+["Apocalypse","PS1"],
+["Far Cry 1","Xbox 360"],
+["Far Cry 2","Xbox 360"],
+["Far Cry 3","Xbox 360"],
+["Far Cry 4","Xbox 360"],
+["Far Cry 5","PS4"],
+["Far Cry 6","PS4"],
+["Far Cry: Evolution","Xbox 360"],
+["Far Cry: Blood Dragon","Xbox 360"],
+["Far Cry: Primal","PS4"],
+["Far Cry: New Dawn","PS4"],
+["The Boogerman","SNES"],
+["Extreme Skate Adventure","PS2"],
+["Marvel: Ultimate Alliance 1","PSP"],
+["Marvel: Ultimate Alliance 2: Civil War","PSP"],
+["Marvel: Ultimate Alliance","GBA"],
+["Alan Wake","Xbox 360"],
+["Downhill Domination","PS2"],
+["Final Fight 1","SNES"],
+["Final Fight 2","SNES"],
+["Final Fight 3","SNES"],
+["Final Fight: Streetwise","PS2"],
+["Tekken 1","PS1"],
+["Tekken 2","PS1"],
+["Tekken 3","PS1"],
+["Tekken 4","PS2"],
+["Tekken 5","PS2"],
+["Tekken 6","PSP"],
+["Tekken Advance","GBA"],
+["Tekken Tag Tournament","PS2"],
+["Tekken Tag Tournament 2","Xbox 360"],
+["Resistance: Retribution","PSP"],
+["Skyblazer","SNES"],
+["Dead Space 1","Xbox 360"],
+["Dead Space 2","Xbox 360"],
+["Dead Space 3","Xbox 360"],
+["25 to Life","PS2"],
+["Magical Pop’n","SNES"],
+["God of War 1","PS2"],
+["God of War 2","PS2"],
+["God of War: Chains of Olympus","PSP"],
+["God of War: Ghost of Sparta","PSP"],
+["Shadow of Rome","PS2"],
+["187 Ride or Die","PS2"],
+["Pursuit Force 1","PSP"],
+["Pursuit Force 2: Extreme Justice","PSP"],
+["Urban Reign","PS2"],
+["Sunset Riders","SNES"],
+["Spartan: Total Warrior","PS2"]
+];
+
+let games=[];
+try {
+ const saved=localStorage.getItem("minhaPlatina");
+ games=saved?JSON.parse(saved):initial.map((g,i)=>({id:i+1,name:g[0],platform:g[1],done:true}));
+} catch(e) {
+ games=initial.map((g,i)=>({id:i+1,name:g[0],platform:g[1],done:true}));
+}
+let nextId=Math.max(0,...games.map(g=>g.id||0))+1;
+const el=id=>document.getElementById(id);
+const safe=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function save(){
+ localStorage.setItem("minhaPlatina",JSON.stringify(games));
+ render();
+}
+function render(){
+ const done=games.filter(g=>g.done).length;
+ el("total").textContent=games.length;
+ el("finished").textContent=done;
+ el("percent").textContent=(games.length?Math.round(done/games.length*100):0)+"%";
+ el("progress").max=Math.max(1,games.length);
+ el("progress").value=done;
+
+ const previous=el("console").value;
+ const platforms=[...new Set(games.map(g=>g.platform))].sort();
+ el("console").innerHTML='<option value="all">Todos os consoles</option>'+
+ platforms.map(p=>`<option value="${safe(p)}">${safe(p)}</option>`).join("");
+ if(platforms.includes(previous))el("console").value=previous;
+
+ const q=el("search").value.toLowerCase();
+ const f=el("filter").value, c=el("console").value;
+ const shown=games.filter(g=>
+ (g.name+" "+g.platform).toLowerCase().includes(q)&&
+ (f==="all"||(f==="yes"&&g.done)||(f==="no"&&!g.done))&&
+ (c==="all"||g.platform===c)
+ ).sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
+
+ el("list").innerHTML=shown.length?shown.map(g=>`
+ <div class="game ${g.done?"done":""}">
+ <input type="checkbox" aria-label="Marcar como zerado" data-check="${g.id}" ${g.done?"checked":""}>
+ <div class="info">
+ <div class="name">${safe(g.name)}</div>
+ <div class="meta">${safe(g.platform)} · <span class="tag">${g.done?"ZERADO":"QUERO JOGAR"}</span></div>
+ </div>
+ <div class="actions">
+ <button type="button" data-edit="${g.id}">Editar</button>
+ <button type="button" data-del="${g.id}">Excluir</button>
+ </div></div>`).join(""):"<p>Nenhum jogo encontrado.</p>";
+}
+
+el("add").addEventListener("submit",e=>{
+ e.preventDefault();
+ games.push({id:nextId++,name:el("name").value.trim(),platform:el("platform").value,done:el("status").value==="yes"});
+ el("name").value="";
+ save();
+});
+el("list").addEventListener("change",e=>{
+ if(!e.target.dataset.check)return;
+ const g=games.find(x=>x.id===Number(e.target.dataset.check));
+ if(g){g.done=e.target.checked;save();}
+});
+el("list").addEventListener("click",e=>{
+ if(e.target.dataset.edit){
+  const g=games.find(x=>x.id===Number(e.target.dataset.edit));
+  const n=prompt("Nome do jogo:",g.name);
+  if(n===null||!n.trim())return;
+  const p=prompt("Console/plataforma:",g.platform);
+  if(p===null)return;
+  g.name=n.trim();g.platform=p.trim()||g.platform;save();
+ }
+ if(e.target.dataset.del){
+  const g=games.find(x=>x.id===Number(e.target.dataset.del));
+  if(g&&confirm("Excluir "+g.name+"?")){games=games.filter(x=>x.id!==g.id);save();}
+ }
+});
+["search","filter","console"].forEach(id=>el(id).addEventListener(id==="search"?"input":"change",render));
+
+function backup(){
+ const blob=new Blob([JSON.stringify(games,null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;a.download="backup-minha-platina.json";a.click();
+ URL.revokeObjectURL(url);
+}
+el("file").addEventListener("change",async e=>{
+ const file=e.target.files[0];if(!file)return;
+ try{
+  const data=JSON.parse(await file.text());
+  if(!Array.isArray(data)||!data.every(g=>g&&typeof g.name==="string"&&typeof g.platform==="string"))throw Error();
+  if(confirm("Importar "+data.length+" jogos e substituir a lista atual?")){
+   games=data.map((g,i)=>({id:Number(g.id)||i+1,name:g.name,platform:g.platform,done:!!g.done}));
+   nextId=Math.max(0,...games.map(g=>g.id))+1;save();
+  }
+ }catch(err){alert("Arquivo inválido. Selecione um backup do Minha Platina.");}
+ e.target.value="";
+});
+render();
+</script>
+</body>
+</html>
